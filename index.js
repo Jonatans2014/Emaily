@@ -5,7 +5,8 @@ const bodyParser = require('body-parser');
 const cookieSession = require("cookie-session");
 const passport = require("passport");
 
-require('./models/user'); 
+require('./models/User');
+require('./models/Survey');
 require('./services/passport');
 
 
@@ -34,7 +35,7 @@ app.use(passport.session());
 //Immediatle invoke app function
 require("./routes/authRoutes")(app);
 require('./routes/billingRoutes')(app);
-
+require('./routes/surveyRoutes')(app);
 // config for production in Heroku
 if(process.env.NODE_ENV  === 'production')
 {

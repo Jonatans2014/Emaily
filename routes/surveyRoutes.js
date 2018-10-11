@@ -1,7 +1,8 @@
 const _ = require("lodash");
 
-import path from 'path'; const { Path } = path;
-//const Path = require("path-parse");
+
+const path = require("path-parse");
+
 const { URL } = require("url");
 const mongoose = require("mongoose");
 const requireLogin = require("../middlewares/requireLogin");
@@ -47,7 +48,7 @@ module.exports = app => {
 
     //send info from sendgrid to here
     app.post("/api/surveys/webhooks", (req, res) => {
-      const p = new Path("/api/surveys/:surveyId/:choice");
+      const p = new path("/api/surveys/:surveyId/:choice");
 
       //loadash chain statement
       _.chain(req.body)

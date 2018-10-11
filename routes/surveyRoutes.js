@@ -1,5 +1,7 @@
 const _ = require("lodash");
-const Path = require("path-parse");
+
+import path from 'path'; const { Path } = path;
+//const Path = require("path-parse");
 const { URL } = require("url");
 const mongoose = require("mongoose");
 const requireLogin = require("../middlewares/requireLogin");

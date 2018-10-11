@@ -1,19 +1,33 @@
-const mongoose = require("mongoose");
 const _ = require("lodash");
 const Path = require("path-parse");
 const { URL } = require("url");
+const mongoose = require("mongoose");
 const requireLogin = require("../middlewares/requireLogin");
 const requireCredits = require("../middlewares/requireCredits");
 const Mailer = require("../services/Mailer");
 const surveyTemplate = require("../services/emailTemplates/surveyTemplate");
 
-//get mongodb model surveys
 const Survey = mongoose.model("surveys");
 
+//path
+//const Path = require("path-parse");
 module.exports = app => {
-  app.get("/api/surveys/thanks", (req, res) => {
-    res.send("Thanks for voting!!");
+
+
+    //query to find all surveys created by the user.
+    app.get("/api/surveys", requireLogin, async (req, res) => {
+    const surveys = await Survey.find({ _user: req.user.id }).select({
+      recipients: false
+    });
+
+    res.send(surveys);
   });
+  //send thanks a message to users
+  app.get("/api/surveys/:surveyId/:choice", (req, res) => {
+    res.send("Thanks for voting!");
+  });
+
+  app.get("/api/surveys", (req, res) => {});
 
   app.post("/api/surveys", requireLogin, requireCredits, async (req, res) => {
     //pass data to this properties
@@ -31,16 +45,41 @@ module.exports = app => {
 
     //send info from sendgrid to here
     app.post("/api/surveys/webhooks", (req, res) => {
-      const events = _.map(req.body, event => {
+      const p = new Path("/api/surveys/:surveyId/:choice");
+
+      //loadash chain statement
+      _.chain(req.body)
         //Extract the path from the URL
         //Take entire URL
-        const pathname = new URL(event.url);
-
         //Extract this route
-        const p = new Path("/api/surveys/:surveyId/:choice");
-
-        console.log(p.test(pathname));
-      });
+        .map(({ email, url }) => {
+          const match = p.test(new URL(url).pathname);
+          //if match is found return that match
+          if (match) {
+            return { email, surveyId: match.surveyId, choice: match.choice };
+          }
+        })
+        // will return only events objects
+        .compact()
+        //get rid of duplicates answers from surveys
+        .uniqBy("email", "surveyId")
+        .each(({ surveyId, email, choice }) => {
+          Survey.updateOne(
+            {
+              _id: surveyId,
+              recipients: {
+                $elemMatch: { email: email, responded: false }
+              }
+            },
+            {
+              $inc: { [choice]: 1 },
+              $set: { "recipients.$.responded": true },
+              lastResponded: new Date()
+            }
+          ).exec();
+        })
+        .value();
+      res.send({});
     });
 
     //Great place to send an email!

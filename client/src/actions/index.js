@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FETCH_USER } from "./types";
+import { FETCH_USER, FETCH_SURVEYS } from "./types";
 
 /*
 export const fetchUser = () => {
@@ -27,10 +27,16 @@ export const handleToken = token => async dispatch => {
 };
 
 //Submit Email Survey to backend
-export const submitSurvey = (values,history) => async dispatch => {
+export const submitSurvey = (values, history) => async dispatch => {
   //perfom a post request to api/surveys
   const res = await axios.post("/api/surveys", values);
 
-  history.push('/surveys');
+  history.push("/surveys");
   return { type: "submit_survey" };
+};
+
+//Create an action creato to get list of surveys from backend
+export const fetchSurveys = () => async dispatch => {
+  const res = await axios.get("/api/surveys");
+  dispatch({ type: FETCH_SURVEYS, payload: res.data });
 };

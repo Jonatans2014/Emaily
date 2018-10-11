@@ -1,6 +1,24 @@
-module.exports = (survey) =>
-{
+const keys = require("../../config/keys");
 
-    return '<div> + survey.body + </div>';
-
+module.exports = survey => {
+  //Email Template
+  return `
+       
+       <html>
+       <body>
+       <div style = "text-align:center;">
+       <h3> I'd like your input! </h3>
+       <p> Please answer the following question: </p>
+       <p>${survey.body}</p>
+       <div>
+        <a href="http://localhost:3000/surveys/${survey.id}/yes">Yes</a>
+       </div>
+       
+       <div>
+       <a href="http://localhost:3000/surveys/${survey.id}/no">No</a>
+       </div>
+       </div>
+       </body>
+       </html>    
+    `;
 };
